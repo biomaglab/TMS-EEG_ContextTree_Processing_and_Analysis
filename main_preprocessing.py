@@ -40,7 +40,7 @@ Steps
 """
 
 # Settings
-config = ProjectConfig(subject_id="V00")
+config = ProjectConfig(subject_id="V04")
 
 # Load data
 raw_data = load_data(config)
@@ -71,11 +71,14 @@ epochs_eeg = ArtifactRemover(config).remove_tms_artifact(epochs_eeg)
 # Remove bad channels (TP9, TP10, O1, O2, Iz)
 epochs_eeg.drop_channels(["TP9", "TP10", "O1", "O2", "Iz"])
 
-# Drop bad marked channels
-epochs_eeg.drop_channels(epochs_eeg.info['bads'])
-
 # Verify bad epochs -> skip if already on json
 epochs_eeg.plot()
+
+# Drop bad marked channels
+#epochs_eeg.drop_channels(epochs_eeg.info['bads'])
+
+# Interpolate channels marked as bad if needed
+epochs_eeg.interpolate_bads(reset_bads=True)
 
 # Remove bad trials using pre-identified epoch indices from JSON
 epochs_eeg = EpochDropper(config).drop_from_json(epochs_eeg,
@@ -108,12 +111,13 @@ epochs_eeg.set_eeg_reference(config.channels.eeg_reference)
 # Apply SSP-SIR
 epochs_eeg = apply_sspsir(epochs_eeg)
 
-# Downsampling to 725 Hz
+# Downsampling to 1000 and 3000 Hz
 epochs_eeg = Downsampler(config).downsample(epochs_eeg)
 epochs_emg = Downsampler(config).downsample_emg_channels(epochs_emg)
 
-##### Interpolate again
-epochs_eeg = ArtifactRemover(config).remove_tms_artifact(epochs_eeg)
+# Interpolate again
+import mne
+epochs_eeg = mne.preprocessing.fix_stim_artifact(epochs_eeg, mode='constant', tmin=-0.005, tmax=0.008, baseline=(-0.01, -0.005))
 
 # Filter EEG data
 epochs_eeg_filtered = Filter(config).bp_filter(epochs_eeg, ch_type='eeg')
@@ -137,7 +141,7 @@ tep_plotter = TEPPlotter(config)
 tep_plotter.plot_evoked_by_symbol(
     epochs_eeg_filtered,
     picks=["FC1", "FC5", "C3", "C4", "CP1", "CP5"],
-    xlim=(-0.1, 0.4),
+    xlim=(-0.1, 0.25),
     ylim=(-10,10)
 )
 
@@ -153,8 +157,8 @@ symbols = exporter.map_annotations_to_symbols(eeg_epochs_annotations)
 writer = Writer(config)
 exporter.export_to_mat(writer, epochs_eeg_filtered, symbols)
 
-# Export processed data
+# Export EMG epochs
 writer.save_emg_epochs(epochs_emg_filtered, 'emg_processed')
 
-# Export epochs
+# Export EEG epochs
 writer.save_epochs(epochs_eeg_filtered, 'processed')
