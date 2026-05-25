@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class IOConfig:
-    export_data: bool = False
-    save_figs: bool = False
+    export_data: bool = True
+    save_figs: bool = True
 
 @dataclass
 class EventConfig:
@@ -20,7 +20,7 @@ class EventConfig:
 
 @dataclass
 class ArtifactConfig:
-    window_removal_artifact: tuple = (-0.005, 0.008)
+    window_removal_artifact: tuple = (-0.002, 0.010)
     mode_removal_artifact: str = 'cubic'
     anchor_window_ms: float = 5.0
 
