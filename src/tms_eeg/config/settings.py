@@ -20,7 +20,7 @@ class EventConfig:
 
 @dataclass
 class ArtifactConfig:
-    window_removal_artifact: tuple = (-0.002, 0.010)
+    window_removal_artifact: tuple = (-0.002, 0.015)
     mode_removal_artifact: str = 'cubic'
     anchor_window_ms: float = 5.0
 

@@ -40,7 +40,7 @@ Steps
 """
 ##############################################################################
 # Settings
-config = ProjectConfig(subject_id="V03")
+config = ProjectConfig(subject_id="V06")
 
 # Load data
 raw_data = load_data(config)
@@ -71,13 +71,20 @@ tep_plotter.plot_evoked_by_symbol(
     epochs_eeg,
     picks=["FC1", "FC5", "C3", "C4", "CP1", "CP5"],
     xlim=(-0.01, 0.015),
-    ylim=(-200, 200)
+    ylim=(-30, 30)
 )
 
 ###########################################################################
 
 # Artifact removal
 epochs_eeg = ArtifactRemover(config).remove_tms_artifact(epochs_eeg, mode='cubic')
+
+tep_plotter.plot_evoked_by_symbol(
+    epochs_eeg,
+    picks=["FC1", "FC5", "C3", "C4", "CP1", "CP5"],
+    xlim=(-0.01, 0.2),
+    ylim=(-30, 30)
+)
 
 # Remove bad channels (TP9, TP10, O1, O2, Iz)
 epochs_eeg.drop_channels(["TP9", "TP10", "O1", "O2", "Iz"])
@@ -131,7 +138,7 @@ epochs_emg = Downsampler(config).downsample_emg_channels(epochs_emg)
 
 # Interpolate again
 import mne
-epochs_eeg = mne.preprocessing.fix_stim_artifact(epochs_eeg, mode='constant', tmin=-0.002, tmax=0.010, baseline=(-0.005, -0.002))
+epochs_eeg = mne.preprocessing.fix_stim_artifact(epochs_eeg, mode='constant', tmin=-0.002, tmax=0.015, baseline=(-0.005, -0.002))
 
 # Filter EEG data
 epochs_eeg_filtered = Filter(config).bp_filter(epochs_eeg, ch_type='eeg')
